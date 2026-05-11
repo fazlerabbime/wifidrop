@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WiFiDrop — Local File Transfer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0e0e10;
+      --surface: #18181c;
+      --surface2: #222228;
+      --border: #2e2e38;
+      --text: #f0eff4;
+      --muted: #7a7a90;
+      --accent: #7c6ff7;
+      --accent2: #4fd1c5;
+      --success: #4ade80;
+      --danger: #f87171;
+      --radius: 16px;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background-image: radial-gradient(ellipse at 20% 20%, rgba(124,111,247,0.08) 0%, transparent 60%),
+                        radial-gradient(ellipse at 80% 80%, rgba(79,209,197,0.06) 0%, transparent 60%);
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 2.2rem;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #7c6ff7, #4fd1c5);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .tagline {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 6px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .hidden { display: none !important; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 10px;
+      border: none;
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      width: 100%;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover { background: #6a5df0; transform: translateY(-1px); }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.8rem;
+      padding: 8px;
+    }
+    .btn-ghost:hover { color: var(--text); }
+
+    /* ── Home Screen ── */
+    #screen-home .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 20px 0;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+    #screen-home .divider::before,
+    #screen-home .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    input[type="text"]:focus { border-color: var(--accent); }
+    input[type="text"]::placeholder { letter-spacing: 0; font-weight: 400; text-transform: none; color: var(--muted); }
+
+    .input-row .btn { width: auto; padding: 12px 20px; }
+
+    .section-label {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    /* ── Waiting Screen ── */
+    .code-display {
+      text-align: center;
+      padding: 24px 0;
+    }
+
+    .code-label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .big-code {
+      font-family: 'Syne', sans-serif;
+      font-size: 3rem;
+      font-weight: 800;
+      letter-spacing: 8px;
+      background: linear-gradient(135deg, #7c6ff7, #4fd1c5);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .qr-container {
+      display: flex;
+      justify-content: center;
+      margin: 20px 0;
+    }
+
+    #qr-img {
+      width: 160px;
+      height: 160px;
+      border-radius: 12px;
+      border: 3px solid var(--border);
+    }
+
+    .waiting-hint {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .pulse-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: var(--accent2);
+      border-radius: 50%;
+      margin-right: 6px;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    /* ── Connecting Screen ── */
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .connecting-text {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    /* ── Ready Screen ── */
+    .peer-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(74, 222, 128, 0.08);
+      border: 1px solid rgba(74, 222, 128, 0.2);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 0.85rem;
+      color: var(--success);
+      margin-bottom: 20px;
+    }
+
+    .peer-dot {
+      width: 7px;
+      height: 7px;
+      background: var(--success);
+      border-radius: 50%;
+    }
+
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 36px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .drop-zone:hover, .drop-zone.drag-over {
+      border-color: var(--accent);
+      background: rgba(124, 111, 247, 0.05);
+    }
+
+    .drop-icon {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    .drop-text {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .drop-text strong { color: var(--text); }
+
+    /* ── Transfer Log ── */
+    #transfer-log {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    .log-item {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 0.82rem;
+    }
+
+    .log-name {
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      margin-bottom: 6px;
+      word-break: break-all;
+    }
+
+    .size { color: var(--muted); font-weight: 400; font-size: 0.78rem; margin-left: 6px; }
+
+    .progress-bar {
+      height: 4px;
+      background: var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 4px;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      width: 0%;
+      transition: width 0.1s;
+      border-radius: 4px;
+    }
+
+    .pct { color: var(--muted); }
+
+    .status { margin-left: 8px; color: var(--muted); }
+    .status.done { color: var(--success); }
+
+    /* ── Error Screen ── */
+    .error-icon { font-size: 2.5rem; text-align: center; margin-bottom: 12px; }
+    #error-msg { text-align: center; color: var(--danger); margin-bottom: 20px; font-size: 0.9rem; }
+
+    /* ── Misc ── */
+    .mt-16 { margin-top: 16px; }
+    .mt-8 { margin-top: 8px; }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">WiFiDrop</div>
+  <div class="tagline">Local file transfer — no cloud, full speed</div>
+</header>
+
+<!-- ── HOME ───────────────────────────────────────── -->
+<div class="card" id="screen-home">
+  <div class="section-label">Start sharing</div>
+  <button class="btn btn-primary" id="btn-create">
+    ＋ &nbsp; Create Room
+  </button>
+
+  <div class="divider">or join existing</div>
+
+  <div class="section-label">Enter room code</div>
+  <div class="input-row">
+    <input type="text" id="join-code" placeholder="ABC123" maxlength="6" />
+    <button class="btn btn-outline" id="btn-join" style="width:auto;padding:12px 20px">Join</button>
+  </div>
+</div>
+
+<!-- ── WAITING ─────────────────────────────────────── -->
+<div class="card hidden" id="screen-waiting">
+  <div class="code-display">
+    <div class="code-label">Share this code</div>
+    <div class="big-code" id="room-code">——</div>
+  </div>
+
+  <div class="qr-container">
+    <img id="qr-img" src="" alt="QR Code" />
+  </div>
+
+  <div class="waiting-hint">
+    <span class="pulse-dot"></span>
+    Waiting for someone to join…
+  </div>
+
+  <button class="btn btn-ghost mt-16" id="btn-reset">← Cancel</button>
+</div>
+
+<!-- ── CONNECTING ──────────────────────────────────── -->
+<div class="card hidden" id="screen-connecting">
+  <div class="spinner"></div>
+  <div class="connecting-text">Establishing connection…</div>
+</div>
+
+<!-- ── READY ───────────────────────────────────────── -->
+<div class="card hidden" id="screen-ready">
+  <div class="peer-badge">
+    <div class="peer-dot"></div>
+    Peer connected — ready to transfer
+  </div>
+
+  <div class="drop-zone" id="drop-zone">
+    <div class="drop-icon">📂</div>
+    <div class="drop-text">
+      <strong>Drop files here</strong><br/>
+      or click to pick files
+    </div>
+  </div>
+
+  <input type="file" id="file-input" multiple style="display:none" />
+
+  <div id="transfer-log"></div>
+
+  <button class="btn btn-ghost mt-16" id="btn-reset">Disconnect</button>
+</div>
+
+<!-- ── ERROR ───────────────────────────────────────── -->
+<div class="card hidden" id="screen-error">
+  <div class="error-icon">⚠️</div>
+  <div id="error-msg">Something went wrong</div>
+  <button class="btn btn-outline" id="btn-reset-err">← Back</button>
+</div>
+
+<script src="/js/webrtc.js"></script>
+<script src="/js/ui.js"></script>
+</body>
+</html>
