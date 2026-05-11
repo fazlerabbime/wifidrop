@@ -2,9 +2,14 @@
   "name": "wifidrop",
   "version": "1.0.0",
   "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": "18.x"
+  },
   "dependencies": {
     "express": "^4.18.2",
-    "vercel": "^53.3.2",
     "ws": "^8.16.0"
   }
 }
