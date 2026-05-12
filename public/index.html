@@ -3,424 +3,534 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WiFiDrop — Local File Transfer</title>
+  <title>WiFiDrop - Local File Transfer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; }
+    * { margin: 0; padding: 0; }
 
     :root {
-      --bg: #0e0e10;
-      --surface: #18181c;
-      --surface2: #222228;
-      --border: #2e2e38;
-      --text: #f0eff4;
-      --muted: #7a7a90;
-      --accent: #7c6ff7;
-      --accent2: #4fd1c5;
-      --success: #4ade80;
-      --danger: #f87171;
-      --radius: 16px;
+      --bg: #101114;
+      --panel: #181a1f;
+      --panel-2: #20232a;
+      --panel-3: #262a33;
+      --border: #343944;
+      --text: #f4f1e8;
+      --muted: #a0a7b5;
+      --muted-2: #798190;
+      --accent: #2fb7a3;
+      --accent-2: #e2b34b;
+      --success: #4dcc7d;
+      --danger: #ff6b6b;
+      --warning: #f3c969;
+      --radius: 8px;
     }
 
     body {
-      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
       background: var(--bg);
       color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      background-image: radial-gradient(ellipse at 20% 20%, rgba(124,111,247,0.08) 0%, transparent 60%),
-                        radial-gradient(ellipse at 80% 80%, rgba(79,209,197,0.06) 0%, transparent 60%);
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .app-shell {
+      width: min(100%, 520px);
     }
 
     header {
-      text-align: center;
-      margin-bottom: 48px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
     }
 
     .logo {
-      font-family: 'Syne', sans-serif;
+      font-size: clamp(2rem, 8vw, 3.4rem);
       font-weight: 800;
-      font-size: 2.2rem;
-      letter-spacing: -0.5px;
-      background: linear-gradient(135deg, #7c6ff7, #4fd1c5);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      line-height: 0.95;
+      letter-spacing: 0;
     }
 
     .tagline {
+      max-width: 190px;
       color: var(--muted);
-      font-size: 0.9rem;
-      margin-top: 6px;
+      font-size: 0.86rem;
+      line-height: 1.35;
+      text-align: right;
     }
 
     .card {
-      background: var(--surface);
+      width: 100%;
+      background: var(--panel);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 32px;
-      width: 100%;
-      max-width: 420px;
+      padding: 20px;
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
     }
 
     .hidden { display: none !important; }
 
-    /* ── Buttons ── */
+    .screen-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    h1, h2 {
+      font-size: 1rem;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 0.85rem;
+      line-height: 1.45;
+    }
+
     .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      padding: 12px 24px;
-      border-radius: 10px;
-      border: none;
-      font-family: 'Syne', sans-serif;
-      font-weight: 600;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: all 0.15s;
-      width: 100%;
-    }
-
-    .btn-primary {
-      background: var(--accent);
-      color: #fff;
-    }
-    .btn-primary:hover { background: #6a5df0; transform: translateY(-1px); }
-
-    .btn-outline {
-      background: transparent;
+      min-height: 42px;
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      border: 1px solid transparent;
       color: var(--text);
-      border: 1px solid var(--border);
+      background: var(--panel-2);
+      font: inherit;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, transform 0.15s;
+      white-space: nowrap;
     }
-    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
 
-    .btn-ghost {
-      background: transparent;
-      color: var(--muted);
-      font-size: 0.8rem;
-      padding: 8px;
+    .btn:hover { transform: translateY(-1px); border-color: var(--accent); }
+    .btn:disabled { cursor: not-allowed; opacity: 0.55; transform: none; }
+    .btn svg { width: 17px; height: 17px; flex: 0 0 auto; }
+
+    .btn-primary { background: var(--accent); color: #061716; }
+    .btn-outline { background: transparent; border-color: var(--border); }
+    .btn-ghost { background: transparent; color: var(--muted); }
+    .btn-icon { width: 42px; padding: 10px; }
+    .btn-wide { width: 100%; }
+
+    .action-stack {
+      display: grid;
+      gap: 12px;
     }
-    .btn-ghost:hover { color: var(--text); }
 
-    /* ── Home Screen ── */
-    #screen-home .divider {
+    .divider {
       display: flex;
       align-items: center;
       gap: 12px;
-      margin: 20px 0;
-      color: var(--muted);
-      font-size: 0.8rem;
+      margin: 18px 0;
+      color: var(--muted-2);
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
     }
-    #screen-home .divider::before,
-    #screen-home .divider::after {
-      content: '';
-      flex: 1;
+
+    .divider::before,
+    .divider::after {
+      content: "";
       height: 1px;
+      flex: 1;
       background: var(--border);
     }
 
     .input-row {
-      display: flex;
+      display: grid;
+      grid-template-columns: 1fr auto auto;
       gap: 8px;
     }
 
     input[type="text"] {
-      flex: 1;
-      background: var(--surface2);
+      width: 100%;
+      min-width: 0;
+      min-height: 42px;
+      background: var(--panel-2);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px 16px;
+      border-radius: var(--radius);
+      padding: 10px 12px;
       color: var(--text);
-      font-family: 'Syne', sans-serif;
+      font: inherit;
       font-size: 1rem;
-      font-weight: 600;
+      font-weight: 800;
       letter-spacing: 2px;
       text-transform: uppercase;
       outline: none;
-      transition: border-color 0.15s;
     }
+
     input[type="text"]:focus { border-color: var(--accent); }
-    input[type="text"]::placeholder { letter-spacing: 0; font-weight: 400; text-transform: none; color: var(--muted); }
-
-    .input-row .btn { width: auto; padding: 12px 20px; }
-
-    .section-label {
-      font-family: 'Syne', sans-serif;
-      font-size: 0.75rem;
-      font-weight: 700;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 12px;
+    input[type="text"]::placeholder {
+      color: var(--muted-2);
+      font-weight: 500;
+      letter-spacing: 0;
+      text-transform: none;
     }
 
-    /* ── Waiting Screen ── */
+    .scanner-panel {
+      margin-top: 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: #0b0c0e;
+    }
+
+    #scanner-video {
+      display: block;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      background: #050607;
+    }
+
+    .scanner-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      background: var(--panel-2);
+    }
+
     .code-display {
-      text-align: center;
-      padding: 24px 0;
-    }
-
-    .code-label {
-      font-size: 0.8rem;
-      color: var(--muted);
-      margin-bottom: 8px;
+      display: grid;
+      gap: 12px;
+      justify-items: center;
+      padding: 8px 0 16px;
     }
 
     .big-code {
-      font-family: 'Syne', sans-serif;
-      font-size: 3rem;
+      font-size: clamp(2.2rem, 12vw, 3.4rem);
+      line-height: 1;
       font-weight: 800;
-      letter-spacing: 8px;
-      background: linear-gradient(135deg, #7c6ff7, #4fd1c5);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      letter-spacing: 7px;
+      color: var(--accent-2);
     }
 
-    .qr-container {
-      display: flex;
-      justify-content: center;
-      margin: 20px 0;
+    .qr-box {
+      width: 184px;
+      height: 184px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: #fff;
+      padding: 12px;
     }
 
-    #qr-img {
+    #qr-canvas {
       width: 160px;
       height: 160px;
-      border-radius: 12px;
-      border: 3px solid var(--border);
     }
 
-    .waiting-hint {
-      text-align: center;
-      color: var(--muted);
-      font-size: 0.85rem;
-    }
-
-    .pulse-dot {
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      background: var(--accent2);
-      border-radius: 50%;
-      margin-right: 6px;
-      animation: pulse 1.5s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.8); }
-    }
-
-    /* ── Connecting Screen ── */
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 3px solid var(--border);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 16px;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .connecting-text {
-      text-align: center;
-      color: var(--muted);
-      font-size: 0.9rem;
-    }
-
-    /* ── Ready Screen ── */
-    .peer-badge {
-      display: flex;
-      align-items: center;
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
       gap: 8px;
-      background: rgba(74, 222, 128, 0.08);
-      border: 1px solid rgba(74, 222, 128, 0.2);
-      border-radius: 8px;
-      padding: 8px 14px;
-      font-size: 0.85rem;
-      color: var(--success);
-      margin-bottom: 20px;
+      margin-bottom: 14px;
     }
 
-    .peer-dot {
-      width: 7px;
-      height: 7px;
-      background: var(--success);
-      border-radius: 50%;
+    .status-pill {
+      min-width: 0;
+      padding: 9px 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--panel-2);
+      color: var(--muted);
+      font-size: 0.75rem;
+      line-height: 1.2;
     }
+
+    .status-pill strong {
+      display: block;
+      margin-top: 3px;
+      color: var(--text);
+      font-size: 0.82rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .status-pill.ok strong { color: var(--success); }
+    .status-pill.warn strong { color: var(--warning); }
+    .status-pill.bad strong { color: var(--danger); }
 
     .drop-zone {
+      display: grid;
+      place-items: center;
+      min-height: 158px;
+      padding: 24px;
       border: 2px dashed var(--border);
       border-radius: var(--radius);
-      padding: 36px 20px;
+      background: var(--panel-2);
       text-align: center;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: background 0.15s, border-color 0.15s;
     }
 
-    .drop-zone:hover, .drop-zone.drag-over {
+    .drop-zone:hover,
+    .drop-zone.drag-over {
       border-color: var(--accent);
-      background: rgba(124, 111, 247, 0.05);
+      background: #1d2a2b;
     }
 
-    .drop-icon {
-      font-size: 2.5rem;
+    .drop-zone svg {
+      width: 34px;
+      height: 34px;
       margin-bottom: 10px;
+      color: var(--accent);
     }
 
-    .drop-text {
-      color: var(--muted);
-      font-size: 0.9rem;
-      line-height: 1.5;
+    .drop-zone strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 0.98rem;
     }
 
-    .drop-text strong { color: var(--text); }
-
-    /* ── Transfer Log ── */
     #transfer-log {
-      margin-top: 20px;
-      display: flex;
-      flex-direction: column;
+      display: grid;
       gap: 10px;
-      max-height: 220px;
+      max-height: 260px;
+      margin-top: 14px;
       overflow-y: auto;
     }
 
     .log-item {
-      background: var(--surface2);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px 14px;
-      font-size: 0.82rem;
+      border-radius: var(--radius);
+      background: var(--panel-2);
+      padding: 12px;
+      font-size: 0.83rem;
+    }
+
+    .log-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
     }
 
     .log-name {
-      font-family: 'Syne', sans-serif;
-      font-weight: 600;
-      margin-bottom: 6px;
-      word-break: break-all;
+      min-width: 0;
+      font-weight: 700;
+      word-break: break-word;
     }
 
-    .size { color: var(--muted); font-weight: 400; font-size: 0.78rem; margin-left: 6px; }
+    .size {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 500;
+    }
+
+    .status {
+      flex: 0 0 auto;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .status.done { color: var(--success); }
+    .status.failed { color: var(--danger); }
 
     .progress-bar {
-      height: 4px;
-      background: var(--border);
-      border-radius: 4px;
+      height: 6px;
       overflow: hidden;
-      margin-bottom: 4px;
+      border-radius: 999px;
+      background: var(--border);
     }
 
     .progress-bar-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
       width: 0%;
-      transition: width 0.1s;
-      border-radius: 4px;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      transition: width 0.12s linear;
     }
 
-    .pct { color: var(--muted); }
+    .metrics {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 0.76rem;
+    }
 
-    .status { margin-left: 8px; color: var(--muted); }
-    .status.done { color: var(--success); }
+    .message {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 0.85rem;
+      line-height: 1.45;
+    }
 
-    /* ── Error Screen ── */
-    .error-icon { font-size: 2.5rem; text-align: center; margin-bottom: 12px; }
-    #error-msg { text-align: center; color: var(--danger); margin-bottom: 20px; font-size: 0.9rem; }
+    .message.error { color: var(--danger); }
+    .message.warn { color: var(--warning); }
 
-    /* ── Misc ── */
-    .mt-16 { margin-top: 16px; }
-    .mt-8 { margin-top: 8px; }
+    .spinner {
+      width: 38px;
+      height: 38px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 999px;
+      animation: spin 0.8s linear infinite;
+      margin: 8px auto 14px;
+    }
 
-    ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .footer-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    @media (max-width: 520px) {
+      body { padding: 16px; place-items: start center; }
+      header { display: block; margin-top: 12px; }
+      .tagline { max-width: none; margin-top: 8px; text-align: left; }
+      .card { padding: 16px; }
+      .input-row { grid-template-columns: 1fr auto; }
+      #btn-join { grid-column: 1 / -1; }
+      .status-grid { grid-template-columns: 1fr; }
+      .footer-actions { flex-direction: column; }
+    }
   </style>
 </head>
 <body>
+  <main class="app-shell">
+    <header>
+      <div class="logo">WiFiDrop</div>
+      <div class="tagline">Private device-to-device file transfer on your local network.</div>
+    </header>
 
-<header>
-  <div class="logo">WiFiDrop</div>
-  <div class="tagline">Local file transfer — no cloud, full speed</div>
-</header>
+    <section class="card" id="screen-home">
+      <div class="screen-title">
+        <h1>Start a transfer</h1>
+        <span class="hint" id="secure-hint"></span>
+      </div>
 
-<!-- ── HOME ───────────────────────────────────────── -->
-<div class="card" id="screen-home">
-  <div class="section-label">Start sharing</div>
-  <button class="btn btn-primary" id="btn-create">
-    ＋ &nbsp; Create Room
-  </button>
+      <div class="action-stack">
+        <button class="btn btn-primary btn-wide" id="btn-create">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          Create room
+        </button>
+      </div>
 
-  <div class="divider">or join existing</div>
+      <div class="divider">Join</div>
 
-  <div class="section-label">Enter room code</div>
-  <div class="input-row">
-    <input type="text" id="join-code" placeholder="ABC123" maxlength="6" />
-    <button class="btn btn-outline" id="btn-join" style="width:auto;padding:12px 20px">Join</button>
-  </div>
-</div>
+      <div class="input-row">
+        <input type="text" id="join-code" placeholder="ABC123" maxlength="32" autocomplete="off" />
+        <button class="btn btn-outline btn-icon" id="btn-scan" type="button" title="Scan QR code" aria-label="Scan QR code">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 4h-5L8 6H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-3l-1.5-2z"/><circle cx="12" cy="13" r="3"/></svg>
+        </button>
+        <button class="btn btn-outline" id="btn-join" type="button">Join</button>
+      </div>
 
-<!-- ── WAITING ─────────────────────────────────────── -->
-<div class="card hidden" id="screen-waiting">
-  <div class="code-display">
-    <div class="code-label">Share this code</div>
-    <div class="big-code" id="room-code">——</div>
-  </div>
+      <div class="scanner-panel hidden" id="scanner-panel">
+        <video id="scanner-video" playsinline muted></video>
+        <canvas id="scanner-canvas" class="hidden"></canvas>
+        <div class="scanner-footer">
+          <span id="scanner-status">Point the camera at a WiFiDrop QR code.</span>
+          <button class="btn btn-ghost" id="btn-stop-scan" type="button">Stop</button>
+        </div>
+      </div>
 
-  <div class="qr-container">
-    <img id="qr-img" src="" alt="QR Code" />
-  </div>
+      <div class="message error hidden" id="home-message"></div>
+    </section>
 
-  <div class="waiting-hint">
-    <span class="pulse-dot"></span>
-    Waiting for someone to join…
-  </div>
+    <section class="card hidden" id="screen-waiting">
+      <div class="screen-title">
+        <h2>Room ready</h2>
+        <span class="hint">Waiting for a peer</span>
+      </div>
 
-  <button class="btn btn-ghost mt-16" id="btn-reset">← Cancel</button>
-</div>
+      <div class="code-display">
+        <div class="big-code" id="room-code">------</div>
+        <div class="qr-box"><canvas id="qr-canvas" width="160" height="160" aria-label="Room QR code"></canvas></div>
+        <p class="hint" id="share-url"></p>
+      </div>
 
-<!-- ── CONNECTING ──────────────────────────────────── -->
-<div class="card hidden" id="screen-connecting">
-  <div class="spinner"></div>
-  <div class="connecting-text">Establishing connection…</div>
-</div>
+      <div class="status-grid">
+        <div class="status-pill ok" id="status-signal">Signal<strong>Online</strong></div>
+        <div class="status-pill warn" id="status-peer">Peer<strong>Waiting</strong></div>
+        <div class="status-pill warn" id="status-channel">Channel<strong>Idle</strong></div>
+      </div>
 
-<!-- ── READY ───────────────────────────────────────── -->
-<div class="card hidden" id="screen-ready">
-  <div class="peer-badge">
-    <div class="peer-dot"></div>
-    Peer connected — ready to transfer
-  </div>
+      <button class="btn btn-ghost btn-wide" id="btn-cancel">Cancel</button>
+    </section>
 
-  <div class="drop-zone" id="drop-zone">
-    <div class="drop-icon">📂</div>
-    <div class="drop-text">
-      <strong>Drop files here</strong><br/>
-      or click to pick files
-    </div>
-  </div>
+    <section class="card hidden" id="screen-connecting">
+      <div class="spinner"></div>
+      <div class="screen-title">
+        <h2>Connecting devices</h2>
+        <span class="hint" id="connecting-detail">Negotiating WebRTC</span>
+      </div>
+      <div class="status-grid">
+        <div class="status-pill ok" id="status-signal-connecting">Signal<strong>Online</strong></div>
+        <div class="status-pill ok" id="status-peer-connecting">Peer<strong>Found</strong></div>
+        <div class="status-pill warn" id="status-channel-connecting">Channel<strong>Opening</strong></div>
+      </div>
+    </section>
 
-  <input type="file" id="file-input" multiple style="display:none" />
+    <section class="card hidden" id="screen-ready">
+      <div class="screen-title">
+        <h2>Connected</h2>
+        <span class="hint" id="ready-detail">Ready to send files</span>
+      </div>
 
-  <div id="transfer-log"></div>
+      <div class="status-grid">
+        <div class="status-pill ok" id="status-signal-ready">Signal<strong>Online</strong></div>
+        <div class="status-pill ok" id="status-peer-ready">Peer<strong>Connected</strong></div>
+        <div class="status-pill ok" id="status-channel-ready">Channel<strong>Open</strong></div>
+      </div>
 
-  <button class="btn btn-ghost mt-16" id="btn-reset">Disconnect</button>
-</div>
+      <div class="drop-zone" id="drop-zone" tabindex="0" role="button" aria-label="Choose files to send">
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+          <strong>Drop files here</strong>
+          <span class="hint">or click to choose from this device</span>
+        </div>
+      </div>
 
-<!-- ── ERROR ───────────────────────────────────────── -->
-<div class="card hidden" id="screen-error">
-  <div class="error-icon">⚠️</div>
-  <div id="error-msg">Something went wrong</div>
-  <button class="btn btn-outline" id="btn-reset-err">← Back</button>
-</div>
+      <input type="file" id="file-input" multiple hidden />
+      <div id="transfer-log"></div>
 
-<script src="/js/webrtc.js"></script>
-<script src="/js/ui.js"></script>
+      <div class="footer-actions">
+        <button class="btn btn-ghost btn-wide" id="btn-disconnect">Disconnect</button>
+      </div>
+    </section>
+
+    <section class="card hidden" id="screen-error">
+      <div class="screen-title">
+        <h2>Connection issue</h2>
+      </div>
+      <div class="message error" id="error-msg">Something went wrong</div>
+      <div class="footer-actions">
+        <button class="btn btn-outline btn-wide" id="btn-retry">Retry</button>
+        <button class="btn btn-ghost btn-wide" id="btn-reset-err">Back</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="/vendor/qrcode-generator/qrcode.js"></script>
+  <script src="/vendor/jsqr/jsQR.js"></script>
+  <script src="/js/webrtc.js"></script>
+  <script src="/js/ui.js"></script>
 </body>
 </html>
